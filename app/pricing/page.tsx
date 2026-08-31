@@ -6,6 +6,7 @@ import { ExperimentIndicator } from "@/components/flag-indicator";
 import { trackPricingView, trackBeginCheckout } from "@/lib/analytics";
 import { EXPERIMENTS } from "@/lib/growthbook";
 import { useEffect } from "react";
+import posthog from "posthog-js";
 
 const PLANS = [
   {
@@ -127,13 +128,18 @@ export default function PricingPage() {
 
               <Link
                 href={plan.href}
-                onClick={() =>
+                onClick={() => {
                   trackBeginCheckout({
                     id: plan.id,
                     name: plan.name,
                     priceMonthly: plan.priceMonthly,
-                  })
-                }
+                  });
+                  posthog.capture("checkout_started", {
+                    plan_id: plan.id,
+                    plan_name: plan.name,
+                    monthly_price: plan.priceMonthly,
+                  });
+                }}
                 className={`block rounded-lg py-2.5 text-center text-sm font-semibold transition-colors ${
                   isHighlighted
                     ? "bg-indigo-600 text-white hover:bg-indigo-500"

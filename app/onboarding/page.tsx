@@ -8,6 +8,7 @@ import { CourseCard } from "@/components/course-card";
 import { ExperimentIndicator } from "@/components/flag-indicator";
 import { trackCtaClick, trackSignUp } from "@/lib/analytics";
 import { EXPERIMENTS } from "@/lib/growthbook";
+import posthog from "posthog-js";
 
 const QUIZ_QUESTIONS = [
   {
@@ -61,6 +62,11 @@ export default function OnboardingPage() {
       setDone(true);
       trackSignUp("email");
       trackCtaClick("Complete quiz", "onboarding");
+      posthog.capture("onboarding_completed", {
+        completion_method: "quiz",
+        onboarding_variant: "quiz",
+        selected_focus: newAnswers.focus,
+      });
     }
   }
 
@@ -69,6 +75,11 @@ export default function OnboardingPage() {
     setDone(true);
     trackSignUp("email");
     trackCtaClick(`Skill: ${level}`, "onboarding");
+    posthog.capture("onboarding_completed", {
+      completion_method: "skill_picker",
+      onboarding_variant: "skill_picker",
+      selected_skill_level: level,
+    });
   }
 
   // Pick courses based on quiz focus or skill level

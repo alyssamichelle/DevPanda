@@ -1,6 +1,6 @@
-# DevPossum — Teaching & Demo Guide
+# DevPanda — Teaching & Demo Guide
 
-DevPossum is a fictional developer-learning platform wired end-to-end to **GrowthBook** (feature flags + experiments), **GA4** (events), and **BigQuery** (analysis). This guide is the script for a live demo or blog post, and a reference for the patterns the app is meant to teach.
+DevPanda is a fictional developer-learning platform wired end-to-end to **GrowthBook** (feature flags + experiments), **GA4** (events), and **BigQuery** (analysis). This guide is the script for a live demo or blog post, and a reference for the patterns the app is meant to teach.
 
 The emphasis is on getting the *measurement* right: where flags are evaluated, how experiment exposure is recorded, how analytics events are named, and how BigQuery joins are written. Several common-but-wrong patterns are called out explicitly under [Anti-patterns this app avoids](#anti-patterns-this-app-avoids).
 
@@ -36,11 +36,11 @@ Middleware/proxy **cannot render UI** — it runs on the Edge and can only rewri
 
 `hero-cta-text` is a 3-way experiment on the primary CTA. Exposure fires the moment the component assigns a variant (via `trackingCallback`), **not** when the user clicks — so non-clickers stay in the denominator.
 
-![DevPossum home, control variant](./screenshots/devpossum-home.png)
+![DevPanda home, control variant](./screenshots/devpossum-home.png)
 
 The `social-proof-widget` flag adds a credibility badge to the hero. Here it is forced on with `/?ff=social-proof-widget`:
 
-![DevPossum home with the social proof badge](./screenshots/devpossum-home-socialproof.png)
+![DevPanda home with the social proof badge](./screenshots/devpossum-home-socialproof.png)
 
 ### 2. Courses — a flag that changes content live
 

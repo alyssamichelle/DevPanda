@@ -18,11 +18,11 @@ export function Nav() {
       <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
         <Link href="/" className="flex items-center gap-2">
           <Image
-            src="/devpossum-text-logo.png"
-            alt="DevPossum"
-            width={140}
-            height={40}
-            className="h-9 w-auto"
+            src="/devpanda-text-logo.png"
+            alt="DevPanda"
+            width={220}
+            height={56}
+            className="h-10 w-auto sm:h-12"
             unoptimized
           />
         </Link>

@@ -33,8 +33,8 @@ export default function HomePage() {
         )}
 
         <Image
-          src="/devpossum-logo.png"
-          alt=""
+          src="/devpanda-logo.png"
+          alt="DevPanda"
           width={524}
           height={524}
           className="mx-auto mb-8 h-56 w-56 sm:h-64 sm:w-64"

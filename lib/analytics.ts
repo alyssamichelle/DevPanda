@@ -113,7 +113,7 @@ function planItems(plan: PlanItem) {
   return [
     {
       item_id: plan.id,
-      item_name: `DevPossum ${plan.name}`,
+      item_name: `DevPanda ${plan.name}`,
       item_category: "subscription",
       price: plan.priceMonthly,
       quantity: 1,

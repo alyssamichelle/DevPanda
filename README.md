@@ -1,8 +1,8 @@
-# DevPossum
+# DevPanda
 
 > The fast path from tutorial to production.
 
-![DevPossum home page](./docs/screenshots/devpossum-home.png)
+![DevPanda home page](./docs/screenshots/devpossum-home.png)
 
 A developer education demo app built with **Next.js 16**, **GrowthBook**, **GA4**, and **BigQuery**. Designed to show how feature flags and A/B experiments work in a realistic SaaS context.
 

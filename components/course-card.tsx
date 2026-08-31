@@ -1,5 +1,8 @@
+"use client";
+
 import Link from "next/link";
 import type { Course } from "@/lib/data";
+import posthog from "posthog-js";
 
 const LEVEL_COLORS = {
   Beginner: "bg-emerald-900/50 text-emerald-400",
@@ -11,6 +14,14 @@ export function CourseCard({ course }: { course: Course }) {
   return (
     <Link
       href={`/courses/${course.slug}`}
+      onClick={() =>
+        posthog.capture("course_selected", {
+          course_id: course.slug,
+          course_category: course.category,
+          course_level: course.level,
+          is_free: course.isFree,
+        })
+      }
       className="group flex flex-col rounded-xl border border-zinc-800 bg-zinc-900 transition-colors hover:border-zinc-600"
     >
       {/* Color band */}
