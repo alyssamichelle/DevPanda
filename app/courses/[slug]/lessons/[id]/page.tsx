@@ -37,13 +37,16 @@ export default function LessonPage({
   // Flags
   const playgroundEnabled = useFeatureIsOn(FLAGS.CODE_PLAYGROUND);
   const showUpsellBanner = useFeatureIsOn(FLAGS.PRO_UPSELL_BANNER);
+  const hintsEnabled = useFeatureIsOn(FLAGS.AI_LESSON_HINTS);
 
   // Track lesson start + elapsed time for lesson_complete
   const startTimeRef = useRef(Date.now());
   const [completed, setCompleted] = useState(false);
+  const [hintRevealed, setHintRevealed] = useState(false);
 
   useEffect(() => {
     startTimeRef.current = Date.now();
+    setHintRevealed(false);
     trackLessonStart(definiteLesson.id, definiteCourse.slug, lessonIndex + 1);
   }, [definiteLesson.id, definiteCourse.slug, lessonIndex]);
 
@@ -133,28 +136,69 @@ export default function LessonPage({
             <p className="text-zinc-300 leading-relaxed text-base">{definiteLesson.body}</p>
           </div>
 
-          {/* Code playground (flag-gated) */}
-          {playgroundEnabled && definiteLesson.hasCode && (
-            <div className="mt-8">
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="text-sm font-semibold text-white">Try it yourself</h3>
-                <FlagIndicator flagKey={FLAGS.CODE_PLAYGROUND} value={playgroundEnabled} />
-              </div>
-              <div className="rounded-lg border border-zinc-700 bg-zinc-900">
-                <div className="flex items-center gap-2 border-b border-zinc-800 px-4 py-2">
-                  <div className="flex gap-1.5">
-                    <span className="h-3 w-3 rounded-full bg-zinc-700" />
-                    <span className="h-3 w-3 rounded-full bg-zinc-700" />
-                    <span className="h-3 w-3 rounded-full bg-zinc-700" />
+          {/* Playground + AI hints sit side by side when both flags are on */}
+          {(playgroundEnabled && definiteLesson.hasCode) || hintsEnabled ? (
+            <div
+              className={`mt-8 grid gap-6 ${
+                playgroundEnabled && definiteLesson.hasCode && hintsEnabled
+                  ? "lg:grid-cols-2"
+                  : ""
+              }`}
+            >
+              {playgroundEnabled && definiteLesson.hasCode && (
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="text-sm font-semibold text-white">Try it yourself</h3>
+                    <FlagIndicator flagKey={FLAGS.CODE_PLAYGROUND} value={playgroundEnabled} />
                   </div>
-                  <span className="text-xs text-zinc-500 ml-2">playground.ts</span>
+                  <div className="rounded-lg border border-zinc-700 bg-zinc-900">
+                    <div className="flex items-center gap-2 border-b border-zinc-800 px-4 py-2">
+                      <div className="flex gap-1.5">
+                        <span className="h-3 w-3 rounded-full bg-zinc-700" />
+                        <span className="h-3 w-3 rounded-full bg-zinc-700" />
+                        <span className="h-3 w-3 rounded-full bg-zinc-700" />
+                      </div>
+                      <span className="text-xs text-zinc-500 ml-2">playground.ts</span>
+                    </div>
+                    <pre className="p-4 text-sm text-zinc-300 overflow-x-auto">
+                      <code>{`// Edit and run this code in your browser\n// (Full playground integration coming soon)\n\nconsole.log("Hello from ${definiteLesson.title}!");`}</code>
+                    </pre>
+                  </div>
                 </div>
-                <pre className="p-4 text-sm text-zinc-300 overflow-x-auto">
-                  <code>{`// Edit and run this code in your browser\n// (Full playground integration coming soon)\n\nconsole.log("Hello from ${definiteLesson.title}!");`}</code>
-                </pre>
-              </div>
+              )}
+
+              {hintsEnabled && (
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="text-sm font-semibold text-white">Ask for a hint</h3>
+                    <FlagIndicator flagKey={FLAGS.AI_LESSON_HINTS} value={hintsEnabled} />
+                  </div>
+                  <div className="rounded-lg border border-indigo-800/40 bg-indigo-950/20 p-4">
+                    {hintRevealed ? (
+                      <p className="text-sm text-indigo-200 leading-relaxed">
+                        Try writing the happy path first, then handle the edge cases. If
+                        you&apos;re stuck on {definiteLesson.title}, split it into a smaller
+                        function you can test on its own.
+                      </p>
+                    ) : (
+                      <>
+                        <p className="mb-4 text-sm text-zinc-400">
+                          Stuck on this lesson? Get a nudge in the right direction — no spoilers.
+                        </p>
+                        <button
+                          type="button"
+                          onClick={() => setHintRevealed(true)}
+                          className="rounded-md bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-indigo-500 transition-colors"
+                        >
+                          Ask for a hint
+                        </button>
+                      </>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
-          )}
+          ) : null}
 
           {/* Mark complete + navigation */}
           <div className="mt-10 flex items-center justify-between border-t border-zinc-800 pt-6">

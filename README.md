@@ -42,6 +42,7 @@ All flags are evaluated by the GrowthBook SDK. Without a client key they return 
 | `pro-upsell-banner` | `true` | Mid-lesson upgrade prompt | `/courses/.../lessons/...` |
 | `new-dashboard-layout` | `false` | XP, streaks, and progress rings | `/dashboard` |
 | `social-proof-widget` | `false` | "Join 50,000 devs" hero badge | `/` |
+| `ai-lesson-hints` | `false` | "Ask for a hint" panel next to the lesson playground | `/courses/.../lessons/...` |
 
 ## Experiments
 

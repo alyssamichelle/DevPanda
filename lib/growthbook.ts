@@ -27,6 +27,8 @@ export const FLAGS = {
   PRO_UPSELL_BANNER: "pro-upsell-banner",
   NEW_DASHBOARD_LAYOUT: "new-dashboard-layout",
   SOCIAL_PROOF_WIDGET: "social-proof-widget",
+  AI_LESSON_HINTS: "ai-lesson-hints",
+  PERSONALIZED_COURSE_BANNER: "personalized-course-banner",
 } as const;
 
 export type FlagKey = (typeof FLAGS)[keyof typeof FLAGS];

@@ -38,6 +38,18 @@ const FLAG_DOCS = [
     description: 'Adds a "Join 50,000 developers" badge to the hero section.',
     metric: "sign_up conversion rate",
   },
+  {
+    key: FLAGS.AI_LESSON_HINTS,
+    page: "/courses/[slug]/lessons/[id]",
+    description: "Shows an Ask for a hint panel next to the lesson playground. Mock AI copy only.",
+    metric: "lesson completion rate",
+  },
+  {
+    key: FLAGS.PERSONALIZED_COURSE_BANNER,
+    page: "/courses",
+    description: "Personalized course banner on the catalog, gated to beta users.",
+    metric: "course enrollment rate",
+  },
 ];
 
 const EXPERIMENT_DOCS = [
@@ -76,6 +88,8 @@ export default function DemoPage() {
   const upsellBanner = useFeatureIsOn(FLAGS.PRO_UPSELL_BANNER);
   const newDashboard = useFeatureIsOn(FLAGS.NEW_DASHBOARD_LAYOUT);
   const socialProof = useFeatureIsOn(FLAGS.SOCIAL_PROOF_WIDGET);
+  const lessonHints = useFeatureIsOn(FLAGS.AI_LESSON_HINTS);
+  const personalizedBanner = useFeatureIsOn(FLAGS.PERSONALIZED_COURSE_BANNER);
 
   const flagValues: Record<string, boolean> = {
     [FLAGS.AI_RECOMMENDATIONS]: aiRecs,
@@ -83,6 +97,8 @@ export default function DemoPage() {
     [FLAGS.PRO_UPSELL_BANNER]: upsellBanner,
     [FLAGS.NEW_DASHBOARD_LAYOUT]: newDashboard,
     [FLAGS.SOCIAL_PROOF_WIDGET]: socialProof,
+    [FLAGS.AI_LESSON_HINTS]: lessonHints,
+    [FLAGS.PERSONALIZED_COURSE_BANNER]: personalizedBanner,
   };
 
   // Read current experiment assignments

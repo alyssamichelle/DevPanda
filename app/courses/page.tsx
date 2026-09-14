@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useFeatureIsOn } from "@growthbook/growthbook-react";
 import { COURSES, getRecommendedCourses } from "@/lib/data";
 import { CourseCard } from "@/components/course-card";
@@ -7,16 +8,19 @@ import { FlagIndicator } from "@/components/flag-indicator";
 import { FLAGS } from "@/lib/growthbook";
 
 const CATEGORIES = ["All", ...Array.from(new Set(COURSES.map((c) => c.category)))];
+const PROFILE_TAGS = ["typescript", "react", "node"];
 
 export default function CoursesPage() {
   // Flag: AI-powered recommendations vs. popularity sort
   const aiRecsEnabled = useFeatureIsOn(FLAGS.AI_RECOMMENDATIONS);
+  // Flag: personalized course banner — beta users first
+  const showPersonalizedBanner = useFeatureIsOn(FLAGS.PERSONALIZED_COURSE_BANNER);
 
   // When AI recs are on, show personalized suggestions at the top
   // (in a real app, this would come from a recommendation API)
-  const recommendedCourses = aiRecsEnabled
-    ? getRecommendedCourses("", ["typescript", "react", "node"])
-    : null;
+  const profilePicks = getRecommendedCourses("", PROFILE_TAGS);
+  const recommendedCourses = aiRecsEnabled ? profilePicks : null;
+  const bannerCourse = showPersonalizedBanner ? profilePicks[0] : null;
 
   const sortedCourses = aiRecsEnabled
     ? [...COURSES].sort((a, b) => (a.isFree === b.isFree ? 0 : a.isFree ? -1 : 1))
@@ -40,6 +44,32 @@ export default function CoursesPage() {
           label={aiRecsEnabled ? "AI sort" : "Popularity sort"}
         />
       </div>
+
+      {showPersonalizedBanner && bannerCourse && (
+        <div className="mb-8 flex flex-wrap items-center justify-between gap-4 rounded-xl border border-indigo-800/50 bg-indigo-950/30 px-5 py-4">
+          <div className="min-w-0">
+            <p className="text-xs font-medium uppercase tracking-wide text-indigo-400">
+              Picked for you
+            </p>
+            <p className="mt-1 text-sm font-medium text-white">
+              Based on your TypeScript, React, and Node activity, start with{" "}
+              {bannerCourse.title}.
+            </p>
+          </div>
+          <div className="flex items-center gap-3">
+            <FlagIndicator
+              flagKey={FLAGS.PERSONALIZED_COURSE_BANNER}
+              value={showPersonalizedBanner}
+            />
+            <Link
+              href={`/courses/${bannerCourse.slug}`}
+              className="rounded-md bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-indigo-500"
+            >
+              Start course →
+            </Link>
+          </div>
+        </div>
+      )}
 
       {/* AI-recommended section (only when flag is ON) */}
       {aiRecsEnabled && recommendedCourses && recommendedCourses.length > 0 && (
