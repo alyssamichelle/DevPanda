@@ -4,7 +4,7 @@
 
 ![DevPanda home page](./docs/screenshots/devpossum-home.png)
 
-A developer education demo app built with **Next.js 16**, **GrowthBook**, **GA4**, and **BigQuery**. Designed to show how feature flags and A/B experiments work in a realistic SaaS context.
+A developer education demo app built with **Next.js 16** and **GrowthBook**. Feature flags and A/B tests evaluate in the SDK; experiment analysis and product events land in GrowthBook **Managed Warehouse** (ClickHouse). Designed to show how that loop works in a realistic SaaS context.
 
 ## What's in here
 
@@ -12,8 +12,7 @@ A developer education demo app built with **Next.js 16**, **GrowthBook**, **GA4*
 |---|---|---|
 | App | Next.js 16 (App Router) | Framework |
 | Feature flags + A/B testing | GrowthBook | `lib/growthbook.ts` |
-| Analytics | Google Analytics 4 | `lib/analytics.ts` |
-| Data analysis | BigQuery | See queries in `lib/analytics.ts` or `/demo` |
+| Event ingest + analysis | Managed Warehouse | SDK tracking plugin + `lib/analytics.ts` |
 | Styles | Tailwind CSS v4 | `app/globals.css` |
 
 ## Quick start
@@ -43,14 +42,15 @@ All flags are evaluated by the GrowthBook SDK. Without a client key they return 
 | `new-dashboard-layout` | `false` | XP, streaks, and progress rings | `/dashboard` |
 | `social-proof-widget` | `false` | "Join 50,000 devs" hero badge | `/` |
 | `ai-lesson-hints` | `false` | "Ask for a hint" panel next to the lesson playground | `/courses/.../lessons/...` |
+| `personalized-course-banner` | `false` | Personalized "Picked for you" banner on the catalog | `/courses` |
 
 ## Experiments
 
 | Experiment key | Page | Variants | Metric |
 |---|---|---|---|
-| `hero-cta-text` | `/` | "Start Learning Free" / "Build Your First Project" / "Join 50,000 Developers" | `sign_up` |
-| `pricing-plan-highlight` | `/pricing` | Equal layout / Pro highlighted | `checkout_start (plan=pro)` |
-| `onboarding-flow` | `/onboarding` | Skill picker / 5-question quiz | `lesson_complete within 24h` |
+| `hero-cta-text` | `/` | "Start Learning Free" / "Build Your First Project" / "Join 50,000 Developers" | `Sign Up` |
+| `pricing-plan-highlight` | `/pricing` | Equal layout / Pro highlighted | `Sign Up` |
+| `onboarding-flow` | `/onboarding` | Skill picker / 5-question quiz | `Sign Up` |
 
 ## How evaluation works (server vs client)
 
@@ -66,51 +66,51 @@ All flags are evaluated by the GrowthBook SDK. Without a client key they return 
 
 Without a client key the app serves flag defaults everywhere.
 
-## GA4 events
+## Events (Managed Warehouse)
 
-Events are tracked via `lib/analytics.ts` and exported to BigQuery automatically
-via the GA4 → BigQuery link.
+The client tracking plugin sends **Experiment Viewed** and feature usage to
+`*.gb-ingest.com`. Custom product events go through `gb.logEvent` in
+`lib/analytics.ts`. Attributes always include both `id` and `device_id` (the
+same `dp_anon_id`) so SDK hashing and warehouse assignment queries agree.
 
-- `page_view` — one per navigation (GA4 auto page_view is disabled; fired from `components/analytics-tracker.tsx`)
-- `sign_up` — registration complete (`method`)
-- `course_view` — course detail opened
-- `lesson_start` — lesson begins rendering
-- `lesson_complete` — user marks complete (`time_spent_seconds`)
-- `cta_click` — any primary CTA (`cta_text`, `location` — no variant; see below)
-- `pricing_view` — pricing page load (`highlighted_plan`)
-- `begin_checkout` — plan selected (GA4 ecommerce: `currency`, `value`, `items`)
-- `purchase` — subscription confirmed (GA4 ecommerce: `transaction_id`, `value`, `items`)
-- `experiment_viewed` — **canonical exposure**, emitted once per experiment by GrowthBook's `trackingCallback` (`experiment_id`, `variation_id`)
-- `feature_flag_evaluated` — flag usage, emitted once per (flag, value) per session via `onFeatureUsage`
+- `Page View` — one per navigation (fired from `components/analytics-tracker.tsx`)
+- `Sign Up` — registration complete (`method`); this is the experiment goal metric (72-hour conversion window)
+- `Course View` — course detail opened
+- `Lesson Start` — lesson begins rendering
+- `Lesson Complete` — user marks complete (`time_spent_seconds`)
+- `CTA Click` — any primary CTA (`cta_text`, `location` — no variant; see below)
+- `Pricing View` — pricing page load (`highlighted_plan`)
+- `Begin Checkout` — plan selected
+- `Purchase` — subscription confirmed
+- `Experiment Viewed` — **canonical exposure**, emitted once per experiment by the tracking plugin (`experimentId`, `variationId`)
+- Feature usage — flag evaluations, emitted by the plugin (not on every render)
 
 > **Exposure is not piggy-backed on other events.** A user can be in several
 > experiments at once and exposure must not depend on whether they later click,
-> so variant lives only on `experiment_viewed`. Join it to metric events on
-> `user_pseudo_id` in BigQuery.
+> so variant lives only on Experiment Viewed. GrowthBook joins it to Sign Up
+> on `device_id`.
+
+Historical demo traffic is backfilled with `scripts/seed_devpanda_history.py --seed`
+(do not run it twice — ingest is not idempotent).
 
 ## Demo walkthrough
 
-Visit `/demo` for the live control panel showing current flag states, active experiment variants, and copy-pasteable BigQuery queries. See [`docs/docs.md`](./docs/docs.md) for the full teaching guide with screenshots.
+Visit `/demo` for the live control panel showing current flag states, active experiment variants, and copy-pasteable warehouse queries. See [`docs/docs.md`](./docs/docs.md) for the full teaching guide with screenshots.
 
 **The aha moment:**
 
 > "I ran the new dashboard as a monitored rollout. The lesson-completion guardrail regressed for the exposed group, so I flipped the flag off in seconds — before a single user filed a support ticket."
 
-(A percentage rollout is observational. For a causal read of the effect, run the feature as a GrowthBook experiment and analyze it from `experiment_viewed` exposures.)
+(A percentage rollout is observational. For a causal read of the effect, run the feature as a GrowthBook experiment and analyze it from Experiment Viewed exposures.)
 
 ## GrowthBook setup
 
 1. Create a free account at [growthbook.io](https://www.growthbook.io)
 2. Create a new project → SDK Connections → copy your client key
-3. Create the feature flags and experiments using the keys above
-4. Add your key to `.env.local`
-
-## BigQuery setup
-
-1. Link your GA4 property to BigQuery (GA4 → Admin → BigQuery Linking)
-2. Wait ~24h for the first data export
-3. Run the queries from `lib/analytics.ts` or `/demo` against your exported dataset
+3. Provision **Managed Warehouse** (Metrics and Data → Data Sources) if the org does not already have it
+4. Create the feature flags and experiments using the keys above; goal metric is Sign Up on the Events fact table
+5. Add your client key to `.env.local`
 
 ## Design doc
 
-See [`canvases/devpossum-demo-design.canvas.tsx`](./canvases/devpossum-demo-design.canvas.tsx) for the full design specification including the app concept rationale, flag/experiment specs, event schema, UI flow, and demo script.
+See [`canvases/devpossum-demo-design.canvas.tsx`](./canvases/devpossum-demo-design.canvas.tsx) for the original design specification (app concept, flag/experiment specs, UI flow). Event ingest described there as GA4/BigQuery is outdated — the live path is Managed Warehouse as above.

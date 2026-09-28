@@ -12,7 +12,6 @@ import {
   trackLessonComplete,
   trackBeginCheckout,
 } from "@/lib/analytics";
-import posthog from "posthog-js";
 
 export default function LessonPage({
   params,
@@ -54,12 +53,6 @@ export default function LessonPage({
     if (completed) return;
     const elapsed = Math.round((Date.now() - startTimeRef.current) / 1000);
     trackLessonComplete(definiteLesson.id, definiteCourse.slug, elapsed);
-    posthog.capture("lesson_completed", {
-      lesson_id: definiteLesson.id,
-      course_id: definiteCourse.slug,
-      lesson_number: lessonIndex + 1,
-      time_spent_seconds: elapsed,
-    });
     setCompleted(true);
   }
 
@@ -109,11 +102,6 @@ export default function LessonPage({
                 <button
                   onClick={() => {
                     trackBeginCheckout({ id: "pro", name: "Pro", priceMonthly: 19 });
-                    posthog.capture("pro_upsell_selected", {
-                      course_id: definiteCourse.slug,
-                      lesson_id: definiteLesson.id,
-                      upsell_location: "lesson_banner",
-                    });
                   }}
                   className="rounded-md bg-amber-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-amber-500 transition-colors"
                 >

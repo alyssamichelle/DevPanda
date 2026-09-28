@@ -6,7 +6,6 @@ import { ExperimentIndicator } from "@/components/flag-indicator";
 import { trackPricingView, trackBeginCheckout } from "@/lib/analytics";
 import { EXPERIMENTS } from "@/lib/growthbook";
 import { useEffect } from "react";
-import posthog from "posthog-js";
 
 const PLANS = [
   {
@@ -63,8 +62,8 @@ export default function PricingPage() {
   });
 
   useEffect(() => {
-    // Exposure for this experiment is recorded by GrowthBook's trackingCallback
-    // (experiment_viewed); pricing_view just records which layout was shown.
+    // Exposure for this experiment is recorded by the tracking plugin
+    // (Experiment Viewed); Pricing View just records which layout was shown.
     trackPricingView(highlightPro ? "pro" : "none");
   }, [highlightPro]);
 
@@ -133,11 +132,6 @@ export default function PricingPage() {
                     id: plan.id,
                     name: plan.name,
                     priceMonthly: plan.priceMonthly,
-                  });
-                  posthog.capture("checkout_started", {
-                    plan_id: plan.id,
-                    plan_name: plan.name,
-                    monthly_price: plan.priceMonthly,
                   });
                 }}
                 className={`block rounded-lg py-2.5 text-center text-sm font-semibold transition-colors ${

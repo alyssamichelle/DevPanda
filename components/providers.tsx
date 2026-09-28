@@ -3,7 +3,11 @@
 import { useEffect, useMemo, type ReactNode } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import { GrowthBookProvider } from "@growthbook/growthbook-react";
-import { getGrowthBook, type GrowthBookBootstrap } from "@/lib/growthbook";
+import {
+  getGrowthBook,
+  visitorAttributes,
+  type GrowthBookBootstrap,
+} from "@/lib/growthbook";
 
 function readAnonIdFromCookie(): string | null {
   if (typeof document === "undefined") return null;
@@ -35,8 +39,9 @@ export function Providers({
   // cookie becomes readable on the client — update it here in the effect phase.)
   useEffect(() => {
     if (!anonId) return;
-    if (gb.getAttributes().id === anonId) return;
-    gb.setAttributes({ ...gb.getAttributes(), id: anonId });
+    const attrs = gb.getAttributes();
+    if (attrs.id === anonId && attrs.device_id === anonId) return;
+    void gb.setAttributes({ ...attrs, ...visitorAttributes(anonId) });
   }, [gb, anonId]);
 
   // Dev-only local preview: `?ff=flag-a,flag-b` force-enables those flags so you

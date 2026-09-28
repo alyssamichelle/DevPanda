@@ -8,17 +8,16 @@
  *     `proxy.ts`). Because the client is initialized with the same
  *     payload + attributes the server used, the first client render matches
  *     the server-rendered HTML — no flag flicker / layout shift.
- *   - Experiment exposure is emitted exactly once per experiment by
- *     `trackingCallback` as `experiment_viewed`.
- *   - Flag usage is emitted at most once per (flag, value) per session by
- *     `onFeatureUsage` — never on every render.
+ *   - Experiment exposure and flag usage are sent to Managed Warehouse by
+ *     `growthbookTrackingPlugin` (client only). Custom product events go
+ *     through `gb.logEvent` in `lib/analytics.ts`.
  *
  * Without a client key, GrowthBook runs in "no-network" mode and all flags
  * return their default values, so the app still works out of the box.
  */
 
 import { GrowthBook, type GrowthBookPayload } from "@growthbook/growthbook-react";
-import { trackExperimentViewed, trackFeatureUsage } from "./analytics";
+import { growthbookTrackingPlugin } from "@growthbook/growthbook/plugins";
 
 // ---- Feature flag keys ----
 export const FLAGS = {
@@ -56,9 +55,13 @@ export type GrowthBookBootstrap = {
   payload?: GrowthBookPayload | null;
 };
 
-// De-dupe set so `onFeatureUsage` emits at most one telemetry event per
-// (flag, value) per page session, regardless of how many components read it.
-const _seenFeatureUsage = new Set<string>();
+/** SDK hashes on `id`; Managed Warehouse assignment queries join on `device_id`. */
+export function visitorAttributes(
+  anonId?: string | null
+): { id: string; device_id: string } | Record<string, never> {
+  if (!anonId) return {};
+  return { id: anonId, device_id: anonId };
+}
 
 // ---- GrowthBook instance management ----
 // On the CLIENT we keep a single instance per browser tab (one visitor).
@@ -80,22 +83,27 @@ export function getGrowthBook(bootstrap: GrowthBookBootstrap = {}): GrowthBook {
     return _gb;
   }
 
+  const clientKey = process.env.NEXT_PUBLIC_GROWTHBOOK_CLIENT_KEY ?? "";
+  const ingestHost =
+    process.env.NEXT_PUBLIC_GB_INGEST_HOST ?? "https://us-east-1.gb-ingest.com";
+
   const gb = new GrowthBook({
     apiHost: process.env.NEXT_PUBLIC_GROWTHBOOK_API_HOST ?? "https://cdn.growthbook.io",
-    clientKey: process.env.NEXT_PUBLIC_GROWTHBOOK_CLIENT_KEY ?? "",
+    clientKey,
     enableDevMode: process.env.NODE_ENV !== "production",
     subscribeToChanges: true,
-    attributes: bootstrap.anonId ? { id: bootstrap.anonId } : {},
-    trackingCallback: (experiment, result) => {
-      // Canonical, deduped-by-SDK exposure event.
-      trackExperimentViewed(experiment.key, String(result.key));
-    },
-    onFeatureUsage: (featureKey, result) => {
-      const dedupeKey = `${featureKey}:${String(result.value)}`;
-      if (_seenFeatureUsage.has(dedupeKey)) return;
-      _seenFeatureUsage.add(dedupeKey);
-      trackFeatureUsage(featureKey, result.value);
-    },
+    attributes: visitorAttributes(bootstrap.anonId),
+    // Ingest only from the browser. A server instance with the plugin would
+    // fire exposures during SSR and double-count with the client.
+    plugins:
+      !isServer && clientKey
+        ? [
+            growthbookTrackingPlugin({
+              enable: true,
+              ingestorHost: ingestHost,
+            }),
+          ]
+        : [],
   });
 
   // Prefer the server-provided payload so the first render has correct values

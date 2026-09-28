@@ -1,11 +1,11 @@
 "use client";
 
-import { useFeatureIsOn, useFeatureValue, useExperiment } from "@growthbook/growthbook-react";
-import { BQ_QUERIES } from "@/lib/analytics";
+import { useFeatureIsOn, useExperiment } from "@growthbook/growthbook-react";
+import { WAREHOUSE_QUERIES } from "@/lib/analytics";
 import { FLAGS, EXPERIMENTS, HERO_CTA_VARIANTS } from "@/lib/growthbook";
 import { useState } from "react";
 
-type QueryKey = keyof typeof BQ_QUERIES;
+type QueryKey = keyof typeof WAREHOUSE_QUERIES;
 
 const FLAG_DOCS = [
   {
@@ -57,26 +57,26 @@ const EXPERIMENT_DOCS = [
     key: EXPERIMENTS.HERO_CTA_TEXT,
     page: "/",
     variants: HERO_CTA_VARIANTS,
-    metric: "sign_up",
+    metric: "Sign Up",
   },
   {
     key: EXPERIMENTS.PRICING_HIGHLIGHT,
     page: "/pricing",
     variants: ["false (equal)", "true (Pro highlighted)"],
-    metric: "checkout_start (plan=pro)",
+    metric: "Sign Up",
   },
   {
     key: EXPERIMENTS.ONBOARDING_FLOW,
     page: "/onboarding",
     variants: ["false (skill picker)", "true (5-question quiz)"],
-    metric: "lesson_complete within 24h",
+    metric: "Sign Up",
   },
 ];
 
-const BQ_LABELS: Record<QueryKey, string> = {
-  funnel: "Funnel: browse → sign up → enroll → complete",
-  experimentImpact: "Experiment lift: sign-up rate by hero-cta variation (exposure-based)",
-  flagRollout: "Monitored rollout guardrail: new-dashboard-layout completion rate",
+const QUERY_LABELS: Record<QueryKey, string> = {
+  funnel: "Funnel: Page View → Sign Up → Course View → Lesson Complete",
+  experimentImpact: "Experiment exposures for hero-cta-text (not CTA clicks)",
+  flagRollout: "Monitored rollout: new-dashboard-layout evaluations",
 };
 
 export default function DemoPage() {
@@ -244,10 +244,14 @@ export default function DemoPage() {
             })}
           </div>
 
-          {/* BigQuery queries */}
-          <h2 className="mb-4 text-lg font-semibold text-white">BigQuery Queries</h2>
+          {/* Warehouse queries */}
+          <h2 className="mb-4 text-lg font-semibold text-white">Managed Warehouse queries</h2>
+          <p className="mb-3 text-xs text-zinc-500">
+            Paste these into GrowthBook SQL Explorer. Experiment stats themselves live on the
+            experiment results page — GrowthBook joins Experiment Viewed to Sign Up for you.
+          </p>
           <div className="flex flex-wrap gap-2 mb-3">
-            {(Object.keys(BQ_QUERIES) as QueryKey[]).map((k) => (
+            {(Object.keys(WAREHOUSE_QUERIES) as QueryKey[]).map((k) => (
               <button
                 key={k}
                 onClick={() => setActiveQuery(k)}
@@ -263,10 +267,10 @@ export default function DemoPage() {
           </div>
           <div className="rounded-xl border border-zinc-800 bg-zinc-950 overflow-hidden">
             <div className="border-b border-zinc-800 px-4 py-2">
-              <p className="text-xs text-zinc-400">{BQ_LABELS[activeQuery]}</p>
+              <p className="text-xs text-zinc-400">{QUERY_LABELS[activeQuery]}</p>
             </div>
             <pre className="overflow-x-auto p-4 text-xs leading-relaxed text-zinc-300">
-              <code>{BQ_QUERIES[activeQuery]}</code>
+              <code>{WAREHOUSE_QUERIES[activeQuery]}</code>
             </pre>
           </div>
         </section>
@@ -294,9 +298,9 @@ export default function DemoPage() {
             },
             {
               step: 4,
-              tool: "BigQuery",
+              tool: "GrowthBook",
               action:
-                "Run experimentImpact — sign-up rate by variation, joined from experiment_viewed exposures (not clicks). Let GrowthBook judge significance.",
+                "Open Homepage hero CTA results — Sign Up by variation from Experiment Viewed exposures (not clicks). Keep it running if intervals still cross zero.",
             },
             {
               step: 5,

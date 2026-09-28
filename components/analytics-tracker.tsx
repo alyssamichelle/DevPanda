@@ -5,11 +5,9 @@ import { usePathname, useSearchParams } from "next/navigation";
 import { trackPageView } from "@/lib/analytics";
 
 /**
- * Fires exactly one `page_view` per client-side navigation.
+ * Fires exactly one Page View per client-side navigation.
  *
- * GA4 is configured with `send_page_view: false` (see `app/layout.tsx`), so
- * this is the single source of page_views — no double-count on first load.
- * The `lastTracked` ref also absorbs React StrictMode's double-invoked effects
+ * The `lastTracked` ref absorbs React StrictMode's double-invoked effects
  * in development, so we don't log the same view twice.
  */
 export function AnalyticsTracker() {
