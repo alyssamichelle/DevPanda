@@ -44,10 +44,12 @@ All flags are evaluated by the GrowthBook SDK. Without a client key they return 
 | `ai-lesson-hints` | `false` | "Ask for a hint" panel next to the lesson playground | `/courses/.../lessons/...` |
 | `personalized-course-banner` | `false` | Personalized "Picked for you" banner on the catalog | `/courses` |
 | `hero-cta-text` | `"Start Learning Free"` | Hero CTA copy, served by the Homepage hero CTA experiment | `/` |
+| `pricing-plan-highlight` | `false` | "Most Popular" Pro highlight, served by the Pricing plan highlight experiment | `/pricing` |
+| `onboarding-quiz` | `false` | 5-question quiz vs. skill picker, served by the Onboarding flow experiment | `/onboarding` |
 
 ## Experiments
 
-`hero-cta-text` runs through its flag's experiment-ref rule, so GrowthBook controls it. `pricing-plan-highlight` and `onboarding-flow` are inline `useExperiment` calls: the split lives in code and GrowthBook only analyzes them.
+Every experiment runs through a flag's experiment-ref rule, so GrowthBook controls the split: start, stop, or roll out a winner there with no deploy. The keys below are the experiments' tracking keys (what Experiment Viewed logs); `onboarding-flow` is served by the `onboarding-quiz` flag because that key was already taken by an unrelated org-wide flag.
 
 | Experiment key | Page | Variants | Metric |
 |---|---|---|---|

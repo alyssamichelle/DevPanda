@@ -106,17 +106,12 @@ export default function DemoPage() {
     [FLAGS.PERSONALIZED_COURSE_BANNER]: isOn(FLAGS.PERSONALIZED_COURSE_BANNER),
   };
 
-  // Hero CTA comes from its flag; pricing and onboarding are inline experiments,
-  // so run them on the silent copy with the same keys their pages use.
+  // Each experiment is served by a flag, so its assignment is the flag value.
   const ctaVariant =
     silentGb?.getFeatureValue<string>(FLAGS.HERO_CTA_TEXT, HERO_CTA_VARIANTS[0]) ??
     HERO_CTA_VARIANTS[0];
-  const pricingHighlight =
-    silentGb?.run({ key: EXPERIMENTS.PRICING_HIGHLIGHT, variations: [false, true] }).value ??
-    false;
-  const onboardingQuiz =
-    silentGb?.run({ key: EXPERIMENTS.ONBOARDING_FLOW, variations: [false, true] }).value ??
-    false;
+  const pricingHighlight = isOn(FLAGS.PRICING_HIGHLIGHT);
+  const onboardingQuiz = isOn(FLAGS.ONBOARDING_QUIZ);
 
   const experimentValues: Record<string, string> = {
     [EXPERIMENTS.HERO_CTA_TEXT]: ctaVariant,

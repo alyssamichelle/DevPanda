@@ -31,11 +31,16 @@ export const FLAGS = {
   // String flag. Its experiment-ref rule serves the Homepage hero CTA
   // experiment (tracking key `hero-cta-text`), so GrowthBook controls the copy.
   HERO_CTA_TEXT: "hero-cta-text",
+  // Boolean flags served by the Pricing plan highlight and Onboarding flow
+  // experiments (experiment-ref rules). `onboarding-flow` was already taken by
+  // an unrelated org-wide flag, hence the different key.
+  PRICING_HIGHLIGHT: "pricing-plan-highlight",
+  ONBOARDING_QUIZ: "onboarding-quiz",
 } as const;
 
 export type FlagKey = (typeof FLAGS)[keyof typeof FLAGS];
 
-// ---- Experiment keys ----
+// ---- Experiment tracking keys (as logged in Experiment Viewed) ----
 export const EXPERIMENTS = {
   HERO_CTA_TEXT: "hero-cta-text",
   PRICING_HIGHLIGHT: "pricing-plan-highlight",

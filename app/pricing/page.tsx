@@ -1,10 +1,10 @@
 "use client";
 
-import { useExperiment } from "@growthbook/growthbook-react";
+import { useFeatureIsOn } from "@growthbook/growthbook-react";
 import Link from "next/link";
 import { ExperimentIndicator } from "@/components/flag-indicator";
 import { trackPricingView, trackBeginCheckout } from "@/lib/analytics";
-import { EXPERIMENTS } from "@/lib/growthbook";
+import { EXPERIMENTS, FLAGS } from "@/lib/growthbook";
 import { useEffect } from "react";
 
 const PLANS = [
@@ -55,11 +55,9 @@ const PLANS = [
 ];
 
 export default function PricingPage() {
-  // Experiment: highlight the Pro plan as "Most Popular"
-  const { value: highlightPro } = useExperiment({
-    key: EXPERIMENTS.PRICING_HIGHLIGHT,
-    variations: [false, true],
-  });
+  // Flag: highlight the Pro plan as "Most Popular". GrowthBook's experiment-ref
+  // rule runs the Pricing plan highlight experiment; off means the equal layout.
+  const highlightPro = useFeatureIsOn(FLAGS.PRICING_HIGHLIGHT);
 
   useEffect(() => {
     // Exposure for this experiment is recorded by the tracking plugin

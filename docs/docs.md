@@ -58,7 +58,7 @@ A Pro lesson with both `pro-upsell-banner` and `beta-code-playground` forced on 
 
 ### 4. Pricing — an experiment + ecommerce events
 
-`pricing-plan-highlight` decides whether Pro gets the "Most Popular" treatment. It's an inline experiment defined in code (`useExperiment`), bucketed client-side by the anon id, so it's stable per visitor; GrowthBook analyzes its exposures but doesn't control the split. Selecting a plan fires `Begin Checkout`. There's no payment step in the demo, so `Purchase` never fires.
+`pricing-plan-highlight` decides whether Pro gets the "Most Popular" treatment. It's served by the `pricing-plan-highlight` flag, whose experiment-ref rule runs the Pricing plan highlight experiment, bucketed by the anon id so it's stable per visitor. That experiment is stopped (no reliable Sign Up movement), so everyone currently gets the default: the equal layout. Selecting a plan fires `Begin Checkout`. There's no payment step in the demo, so `Purchase` never fires.
 
 ![Pricing page, Pro highlighted variant](./screenshots/devpossum-pricing.png)
 

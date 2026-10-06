@@ -2,12 +2,12 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useExperiment } from "@growthbook/growthbook-react";
+import { useFeatureIsOn } from "@growthbook/growthbook-react";
 import { COURSES } from "@/lib/data";
 import { CourseCard } from "@/components/course-card";
 import { ExperimentIndicator } from "@/components/flag-indicator";
 import { trackCtaClick, trackSignUp } from "@/lib/analytics";
-import { EXPERIMENTS } from "@/lib/growthbook";
+import { EXPERIMENTS, FLAGS } from "@/lib/growthbook";
 
 const QUIZ_QUESTIONS = [
   {
@@ -38,11 +38,9 @@ const QUIZ_QUESTIONS = [
 ];
 
 export default function OnboardingPage() {
-  // Experiment: simple skill-level picker vs. 5-question quiz
-  const { value: showQuiz } = useExperiment({
-    key: EXPERIMENTS.ONBOARDING_FLOW,
-    variations: [false, true],
-  });
+  // Flag: simple skill-level picker vs. 5-question quiz. GrowthBook's
+  // experiment-ref rule runs the Onboarding flow experiment.
+  const showQuiz = useFeatureIsOn(FLAGS.ONBOARDING_QUIZ);
 
   const [step, setStep] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string>>({});
