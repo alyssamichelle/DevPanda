@@ -2,7 +2,7 @@
 
 import { useFeatureIsOn } from "@growthbook/growthbook-react";
 import Link from "next/link";
-import { ExperimentIndicator } from "@/components/flag-indicator";
+import { ExperimentIndicator, CycleVisitorButton } from "@/components/flag-indicator";
 import { trackPricingView, trackBeginCheckout } from "@/lib/analytics";
 import { EXPERIMENTS, FLAGS } from "@/lib/growthbook";
 import { useEffect } from "react";
@@ -72,11 +72,12 @@ export default function PricingPage() {
         <p className="mt-3 text-zinc-400">
           Start free. Upgrade when you want more.
         </p>
-        <div className="mt-4 flex justify-center">
+        <div className="mt-4 flex flex-wrap justify-center gap-2">
           <ExperimentIndicator
             experimentKey={EXPERIMENTS.PRICING_HIGHLIGHT}
             variant={highlightPro ? "pro-highlighted" : "control"}
           />
+          <CycleVisitorButton />
         </div>
       </div>
 

@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useFeatureIsOn } from "@growthbook/growthbook-react";
 import { COURSES } from "@/lib/data";
 import { CourseCard } from "@/components/course-card";
-import { ExperimentIndicator } from "@/components/flag-indicator";
+import { ExperimentIndicator, CycleVisitorButton } from "@/components/flag-indicator";
 import { trackCtaClick, trackSignUp } from "@/lib/analytics";
 import { EXPERIMENTS, FLAGS } from "@/lib/growthbook";
 
@@ -82,10 +82,13 @@ export default function OnboardingPage() {
         <h1 className="text-2xl font-bold text-white">
           {done ? "Your learning path" : "Let's get you started"}
         </h1>
-        <ExperimentIndicator
-          experimentKey={EXPERIMENTS.ONBOARDING_FLOW}
-          variant={showQuiz ? "quiz" : "skill-picker"}
-        />
+        <div className="flex flex-wrap items-center justify-end gap-2">
+          <ExperimentIndicator
+            experimentKey={EXPERIMENTS.ONBOARDING_FLOW}
+            variant={showQuiz ? "quiz" : "skill-picker"}
+          />
+          <CycleVisitorButton />
+        </div>
       </div>
 
       {!done && showQuiz && (

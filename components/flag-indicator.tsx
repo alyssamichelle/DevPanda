@@ -1,3 +1,5 @@
+"use client";
+
 /**
  * Visible flag/experiment indicators shown in dev mode.
  * These make it obvious during a demo which feature is controlled by GrowthBook.
@@ -45,5 +47,29 @@ export function ExperimentIndicator({ experimentKey, variant }: ExperimentIndica
       <span className="text-indigo-700">·</span>
       <span className="font-semibold">{variant}</span>
     </div>
+  );
+}
+
+/**
+ * Dev-only: become a brand-new visitor. Experiments bucket on the `dp_anon_id`
+ * cookie, so a refresh keeps the same variant. Clearing the cookie and
+ * reloading makes `proxy.ts` mint a fresh id, which may land in another variant.
+ */
+export function CycleVisitorButton() {
+  if (process.env.NODE_ENV === "production") return null;
+
+  return (
+    <button
+      type="button"
+      onClick={() => {
+        document.cookie = "dp_anon_id=; path=/; max-age=0";
+        window.location.reload();
+      }}
+      className="inline-flex items-center gap-1.5 rounded border border-dashed border-zinc-600 bg-zinc-900/80 px-2 py-1 text-xs text-zinc-400 transition-colors hover:border-zinc-400 hover:text-zinc-200"
+      title="Clear the anonymous id and reload as a new visitor"
+    >
+      <span aria-hidden>↻</span>
+      Cycle to different user
+    </button>
   );
 }

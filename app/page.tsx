@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useFeatureIsOn, useFeatureValue } from "@growthbook/growthbook-react";
 import { COURSES } from "@/lib/data";
 import { CourseCard } from "@/components/course-card";
-import { ExperimentIndicator, FlagIndicator } from "@/components/flag-indicator";
+import { ExperimentIndicator, FlagIndicator, CycleVisitorButton } from "@/components/flag-indicator";
 import { trackCtaClick } from "@/lib/analytics";
 import { EXPERIMENTS, FLAGS, HERO_CTA_VARIANTS } from "@/lib/growthbook";
 
@@ -76,6 +76,7 @@ export default function HomePage() {
             flagKey={FLAGS.SOCIAL_PROOF_WIDGET}
             value={showSocialProof}
           />
+          <CycleVisitorButton />
         </div>
       </section>
 
