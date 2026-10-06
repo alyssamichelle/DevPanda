@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useExperiment, useFeatureIsOn } from "@growthbook/growthbook-react";
+import { useFeatureIsOn, useFeatureValue } from "@growthbook/growthbook-react";
 import { COURSES } from "@/lib/data";
 import { CourseCard } from "@/components/course-card";
 import { ExperimentIndicator, FlagIndicator } from "@/components/flag-indicator";
@@ -10,11 +10,9 @@ import { trackCtaClick } from "@/lib/analytics";
 import { EXPERIMENTS, FLAGS, HERO_CTA_VARIANTS } from "@/lib/growthbook";
 
 export default function HomePage() {
-  // Experiment: hero CTA text (3 variants)
-  const { value: ctaText } = useExperiment({
-    key: EXPERIMENTS.HERO_CTA_TEXT,
-    variations: [...HERO_CTA_VARIANTS],
-  });
+  // Flag: hero CTA text. GrowthBook's experiment-ref rule picks the variant
+  // (3-way Homepage hero CTA experiment); the default is the control copy.
+  const ctaText = useFeatureValue<string>(FLAGS.HERO_CTA_TEXT, HERO_CTA_VARIANTS[0]);
 
   // Flag: social proof widget
   const showSocialProof = useFeatureIsOn(FLAGS.SOCIAL_PROOF_WIDGET);

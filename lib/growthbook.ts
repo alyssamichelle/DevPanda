@@ -28,6 +28,9 @@ export const FLAGS = {
   SOCIAL_PROOF_WIDGET: "social-proof-widget",
   AI_LESSON_HINTS: "ai-lesson-hints",
   PERSONALIZED_COURSE_BANNER: "personalized-course-banner",
+  // String flag. Its experiment-ref rule serves the Homepage hero CTA
+  // experiment (tracking key `hero-cta-text`), so GrowthBook controls the copy.
+  HERO_CTA_TEXT: "hero-cta-text",
 } as const;
 
 export type FlagKey = (typeof FLAGS)[keyof typeof FLAGS];
@@ -61,6 +64,19 @@ export function visitorAttributes(
 ): { id: string; device_id: string } | Record<string, never> {
   if (!anonId) return {};
   return { id: anonId, device_id: anonId };
+}
+
+/**
+ * A copy of `source` with no tracking plugin, for read-only views like /demo.
+ * Evaluating flags or experiments on it never sends Experiment Viewed or
+ * Feature Evaluated, so looking up an assignment doesn't count as an exposure.
+ */
+export function createSilentGrowthBook(source: GrowthBook): GrowthBook {
+  const gb = new GrowthBook({ attributes: source.getAttributes() });
+  gb.initSync({ payload: source.getPayload() });
+  gb.setForcedFeatures(source.getForcedFeatures());
+  gb.setForcedVariations(source.getForcedVariations());
+  return gb;
 }
 
 // ---- GrowthBook instance management ----

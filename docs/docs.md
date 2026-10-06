@@ -34,7 +34,7 @@ Middleware/proxy **cannot render UI** — it runs on the Edge and can only rewri
 
 ### 1. Home — the hero CTA experiment
 
-`hero-cta-text` is a 3-way experiment on the primary CTA. Exposure fires the moment the component assigns a variant (via the tracking plugin), **not** when the user clicks — so non-clickers stay in the denominator.
+`hero-cta-text` is a string flag that sets the primary CTA copy. Its experiment-ref rule serves the 3-way **Homepage hero CTA** experiment, so GrowthBook decides who sees which copy: stop the experiment or roll out a winner there and the button changes with no deploy. Exposure fires the moment the flag assigns a variant (via the tracking plugin), **not** when the user clicks — so non-clickers stay in the denominator.
 
 ![DevPanda home, control variant](./screenshots/devpossum-home.png)
 
@@ -58,7 +58,7 @@ A Pro lesson with both `pro-upsell-banner` and `beta-code-playground` forced on 
 
 ### 4. Pricing — an experiment + ecommerce events
 
-`pricing-plan-highlight` decides whether Pro gets the "Most Popular" treatment. Bucketing is done client-side by the anon id, so it's stable per visitor even without the server experiment definition. Selecting a plan fires `Begin Checkout`; a confirmed subscription fires `Purchase`.
+`pricing-plan-highlight` decides whether Pro gets the "Most Popular" treatment. It's an inline experiment defined in code (`useExperiment`), bucketed client-side by the anon id, so it's stable per visitor; GrowthBook analyzes its exposures but doesn't control the split. Selecting a plan fires `Begin Checkout`. There's no payment step in the demo, so `Purchase` never fires.
 
 ![Pricing page, Pro highlighted variant](./screenshots/devpossum-pricing.png)
 
@@ -80,10 +80,10 @@ A live view of every flag state, the current experiment assignment per experimen
 
 ## Walkthrough script (~8 min)
 
-1. **Set the scene** — open `/`. Point out the hero CTA; explain it's an experiment and that exposure is logged on view, not click.
+1. **Set the scene** — open `/`. Point out the hero CTA; explain it's served by the `hero-cta-text` flag running an experiment, and that exposure is logged on view, not click.
 2. **Live flag toggle** — flip `ai-course-recommendations` in GrowthBook, reload `/courses`. The grid changes with no deploy.
 3. **Experiment assignment** — open `/demo`, show the current bucket per experiment and that it's stable across reloads (anon id).
-4. **Experiment analysis** — open Homepage hero CTA in GrowthBook. It joins Experiment Viewed exposures to Sign Up (72-hour window), so the rate is computed over everyone exposed. If intervals still cross zero, the honest read is keep it running.
+4. **Experiment analysis** — open the Homepage hero CTA experiment in GrowthBook (served by the `hero-cta-text` flag). It joins Experiment Viewed exposures to Sign Up (72-hour window), so the rate is computed over everyone exposed. If intervals still cross zero, the honest read is keep it running.
 5. **The rollback** — on `new-dashboard-layout`, a completion-rate guardrail regression for the exposed group is a signal to toggle it off. Seconds, not a hotfix.
 
 > **Be honest about causality.** A percentage rollout is *observational* — a guardrail regression is a signal to roll back and investigate, not a proven causal effect. For a causal read, run the feature as a GrowthBook experiment and analyze it from Experiment Viewed exposures.
@@ -101,7 +101,7 @@ A live view of every flag state, the current experiment assignment per experimen
 | `CTA Click` | primary CTA | `cta_text`, `location` | **No variant** — exposure owns that. |
 | `Pricing View` | pricing load | `highlighted_plan` | |
 | `Begin Checkout` | plan selected | `currency`, `value`, `items` | |
-| `Purchase` | subscription confirmed | `transaction_id`, `currency`, `value`, `items` | |
+| `Purchase` | subscription confirmed | `transaction_id`, `currency`, `value`, `items` | Defined (`trackPurchase`) but not fired: the demo has no payment step. |
 | `Experiment Viewed` | assignment | `experimentId`, `variationId` | **Canonical exposure**, one per experiment, via the tracking plugin. |
 | Feature usage | flag evaluation | `feature` | Plugin; not on every render. |
 

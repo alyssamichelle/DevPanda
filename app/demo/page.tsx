@@ -1,8 +1,13 @@
 "use client";
 
-import { useFeatureIsOn, useExperiment } from "@growthbook/growthbook-react";
+import { useGrowthBook } from "@growthbook/growthbook-react";
 import { WAREHOUSE_QUERIES } from "@/lib/analytics";
-import { FLAGS, EXPERIMENTS, HERO_CTA_VARIANTS } from "@/lib/growthbook";
+import {
+  FLAGS,
+  EXPERIMENTS,
+  HERO_CTA_VARIANTS,
+  createSilentGrowthBook,
+} from "@/lib/growthbook";
 import { useState } from "react";
 
 type QueryKey = keyof typeof WAREHOUSE_QUERIES;
@@ -82,45 +87,41 @@ const QUERY_LABELS: Record<QueryKey, string> = {
 export default function DemoPage() {
   const [activeQuery, setActiveQuery] = useState<QueryKey>("funnel");
 
-  // Read current flag states
-  const aiRecs = useFeatureIsOn(FLAGS.AI_RECOMMENDATIONS);
-  const playground = useFeatureIsOn(FLAGS.CODE_PLAYGROUND);
-  const upsellBanner = useFeatureIsOn(FLAGS.PRO_UPSELL_BANNER);
-  const newDashboard = useFeatureIsOn(FLAGS.NEW_DASHBOARD_LAYOUT);
-  const socialProof = useFeatureIsOn(FLAGS.SOCIAL_PROOF_WIDGET);
-  const lessonHints = useFeatureIsOn(FLAGS.AI_LESSON_HINTS);
-  const personalizedBanner = useFeatureIsOn(FLAGS.PERSONALIZED_COURSE_BANNER);
+  // Read flags and assignments from a copy with no tracking plugin. Using the
+  // tracked hooks here would log Experiment Viewed for all three experiments on
+  // every /demo visit, counting people who never saw those pages as exposed.
+  // The provider re-renders this page on feature updates, so a fresh copy per
+  // render stays in sync.
+  const gb = useGrowthBook();
+  const silentGb = gb ? createSilentGrowthBook(gb) : null;
+  const isOn = (key: string) => silentGb?.isOn(key) ?? false;
 
   const flagValues: Record<string, boolean> = {
-    [FLAGS.AI_RECOMMENDATIONS]: aiRecs,
-    [FLAGS.CODE_PLAYGROUND]: playground,
-    [FLAGS.PRO_UPSELL_BANNER]: upsellBanner,
-    [FLAGS.NEW_DASHBOARD_LAYOUT]: newDashboard,
-    [FLAGS.SOCIAL_PROOF_WIDGET]: socialProof,
-    [FLAGS.AI_LESSON_HINTS]: lessonHints,
-    [FLAGS.PERSONALIZED_COURSE_BANNER]: personalizedBanner,
+    [FLAGS.AI_RECOMMENDATIONS]: isOn(FLAGS.AI_RECOMMENDATIONS),
+    [FLAGS.CODE_PLAYGROUND]: isOn(FLAGS.CODE_PLAYGROUND),
+    [FLAGS.PRO_UPSELL_BANNER]: isOn(FLAGS.PRO_UPSELL_BANNER),
+    [FLAGS.NEW_DASHBOARD_LAYOUT]: isOn(FLAGS.NEW_DASHBOARD_LAYOUT),
+    [FLAGS.SOCIAL_PROOF_WIDGET]: isOn(FLAGS.SOCIAL_PROOF_WIDGET),
+    [FLAGS.AI_LESSON_HINTS]: isOn(FLAGS.AI_LESSON_HINTS),
+    [FLAGS.PERSONALIZED_COURSE_BANNER]: isOn(FLAGS.PERSONALIZED_COURSE_BANNER),
   };
 
-  // Read current experiment assignments
-  const { value: ctaVariant } = useExperiment({
-    key: EXPERIMENTS.HERO_CTA_TEXT,
-    variations: [...HERO_CTA_VARIANTS],
-  });
-
-  const { value: pricingHighlight } = useExperiment({
-    key: EXPERIMENTS.PRICING_HIGHLIGHT,
-    variations: [false, true],
-  });
-
-  const { value: onboardingQuiz } = useExperiment({
-    key: EXPERIMENTS.ONBOARDING_FLOW,
-    variations: [false, true],
-  });
+  // Hero CTA comes from its flag; pricing and onboarding are inline experiments,
+  // so run them on the silent copy with the same keys their pages use.
+  const ctaVariant =
+    silentGb?.getFeatureValue<string>(FLAGS.HERO_CTA_TEXT, HERO_CTA_VARIANTS[0]) ??
+    HERO_CTA_VARIANTS[0];
+  const pricingHighlight =
+    silentGb?.run({ key: EXPERIMENTS.PRICING_HIGHLIGHT, variations: [false, true] }).value ??
+    false;
+  const onboardingQuiz =
+    silentGb?.run({ key: EXPERIMENTS.ONBOARDING_FLOW, variations: [false, true] }).value ??
+    false;
 
   const experimentValues: Record<string, string> = {
     [EXPERIMENTS.HERO_CTA_TEXT]: ctaVariant,
     [EXPERIMENTS.PRICING_HIGHLIGHT]: String(pricingHighlight),
-    [EXPERIMENTS.ONBOARDING_FLOW]: onboardingQuiz ? "quiz" : "skill-picker",
+    [EXPERIMENTS.ONBOARDING_FLOW]: String(onboardingQuiz),
   };
 
   return (
@@ -284,7 +285,7 @@ export default function DemoPage() {
             {
               step: 1,
               tool: "Browser",
-              action: 'Open / — point out the hero CTA text and ask "does this look different to you?"',
+              action: 'Open / — point out the hero CTA text (the hero-cta-text flag) and ask "does this look different to you?"',
             },
             {
               step: 2,
@@ -300,7 +301,7 @@ export default function DemoPage() {
               step: 4,
               tool: "GrowthBook",
               action:
-                "Open Homepage hero CTA results — Sign Up by variation from Experiment Viewed exposures (not clicks). Keep it running if intervals still cross zero.",
+                "Open the Homepage hero CTA experiment (served by the hero-cta-text flag) — Sign Up by variation from Experiment Viewed exposures (not clicks). Keep it running if intervals still cross zero.",
             },
             {
               step: 5,

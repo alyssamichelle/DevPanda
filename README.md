@@ -43,8 +43,11 @@ All flags are evaluated by the GrowthBook SDK. Without a client key they return 
 | `social-proof-widget` | `false` | "Join 50,000 devs" hero badge | `/` |
 | `ai-lesson-hints` | `false` | "Ask for a hint" panel next to the lesson playground | `/courses/.../lessons/...` |
 | `personalized-course-banner` | `false` | Personalized "Picked for you" banner on the catalog | `/courses` |
+| `hero-cta-text` | `"Start Learning Free"` | Hero CTA copy, served by the Homepage hero CTA experiment | `/` |
 
 ## Experiments
+
+`hero-cta-text` runs through its flag's experiment-ref rule, so GrowthBook controls it. `pricing-plan-highlight` and `onboarding-flow` are inline `useExperiment` calls: the split lives in code and GrowthBook only analyzes them.
 
 | Experiment key | Page | Variants | Metric |
 |---|---|---|---|
@@ -81,7 +84,7 @@ same `dp_anon_id`) so SDK hashing and warehouse assignment queries agree.
 - `CTA Click` — any primary CTA (`cta_text`, `location` — no variant; see below)
 - `Pricing View` — pricing page load (`highlighted_plan`)
 - `Begin Checkout` — plan selected
-- `Purchase` — subscription confirmed
+- `Purchase` — subscription confirmed (defined, not fired: the demo has no payment step)
 - `Experiment Viewed` — **canonical exposure**, emitted once per experiment by the tracking plugin (`experimentId`, `variationId`)
 - Feature usage — flag evaluations, emitted by the plugin (not on every render)
 
